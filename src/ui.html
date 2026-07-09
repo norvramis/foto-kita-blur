@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraCam Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1e1b29 0%, #0d0b11 100%);
+            color: #f3f4f6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Glassmorphic Container */
+        .card {
+            background: rgba(30, 27, 41, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            width: 380px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Title and Subtitle */
+        h1 {
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-weight: 300;
+            margin-bottom: 35px;
+        }
+
+        /* Interactive Toggle Switch */
+        .switch-container {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: #15131f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.5), 0 0 0 2px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .switch-icon {
+            width: 50px;
+            height: 50px;
+            fill: #4b5563;
+            transition: all 0.4s ease;
+        }
+
+        /* Switch Active (ON) State Styles */
+        .switch-container.active {
+            background: radial-gradient(circle, #10b981 0%, #047857 100%);
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.6), inset 0 2px 5px rgba(255,255,255,0.3);
+        }
+
+        .switch-container.active .switch-icon {
+            fill: #ffffff;
+            transform: scale(1.1);
+        }
+
+        /* Glow Ring Animation */
+        .switch-container.active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #10b981;
+            animation: pulse 2s infinite;
+            opacity: 0;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* Status Label Badge */
+        .status-badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            padding: 8px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.active {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+        }
+
+        .status-badge.inactive {
+            color: #9ca3af;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Exit Button */
+        .exit-btn {
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exit-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>AuraCam</h1>
+        <p class="subtitle">Premium Camera Shield & Blur Control</p>
+
+        <!-- Toggle Switch Panel -->
+        <div class="switch-container" id="cameraToggle">
+            <!-- Sleek Camera SVG Icon -->
+            <svg class="switch-icon" viewBox="0 0 24 24">
+                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 16H5V8h9v8z"/>
+            </svg>
+        </div>
+
+        <!-- Status Pill Label -->
+        <div class="status-badge inactive" id="statusLabel">SYSTEM MUTED (OFF)</div>
+
+        <!-- Termination Button -->
+        <button class="exit-btn" id="exitBtn">Close Application</button>
+    </div>
+
+    <script>
+        const host = "http://127.0.0.1:28835";
+        const toggleContainer = document.getElementById('cameraToggle');
+        const statusLabel = document.getElementById('statusLabel');
+        const exitBtn = document.getElementById('exitBtn');
+
+        // Function to update user interface based on server state
+        function updateUI(status) {
+            if (status === "ON") {
+                toggleContainer.classList.add('active');
+                statusLabel.classList.add('active');
+                statusLabel.classList.remove('inactive');
+                statusLabel.innerText = "WEBCAM: ACTIVE (ON)";
+            } else {
+                toggleContainer.classList.remove('active');
+                statusLabel.classList.remove('active');
+                statusLabel.classList.add('inactive');
+                statusLabel.innerText = "WEBCAM: MUTED (OFF)";
+            }
+        }
+
+        // Fetch current camera status on intervals
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${host}/status`);
+                const data = await response.json();
+                updateUI(data.status);
+            } catch (err) {
+                console.error("Server connection lost:", err);
+            }
+        }
+
+        // Toggle state event triggers
+        toggleContainer.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${host}/toggle`);
+                const data = await response.json();
+                updateUI(data.status);
+            } catch (err) {
+                alert("Failed to connect to AuraCam process. Is it running?");
+            }
+        });
+
+        // Close app trigger
+        exitBtn.addEventListener('click', async () => {
+            if (confirm("Are you sure you want to shut down AuraCam completely?")) {
+                try {
+                    await fetch(`${host}/exit`);
+                    window.close();
+                } catch (err) {
+                    // Script exiting, page window can close now
+                    window.close();
+                }
+            }
+        });
+
+        // Initial setup and polling intervals
+        fetchStatus();
+        setInterval(fetchStatus, 800);
+    </script>
+</body>
+</html>

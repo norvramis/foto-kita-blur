@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraCam - Peace Gesture Dynamic Blur Camera</title>
+  <meta name="description" content="An interactive web application that uses AI hand-tracking to automatically blur your camera feed when you make a peace (V-sign) gesture. Built with MediaPipe Tasks Vision.">
+  <meta name="keywords" content="webcam, handpose, peace sign, blur camera, mediapipe, real-time video filter, privacy camera">
+  <meta name="author" content="Antigravity AI">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Blur Overlay for Screen Blur Mode -->
+  <div id="screen-blur-overlay" class="screen-blur-overlay"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-camera-rotate animate-pulse"></i>
+        </div>
+        <div class="logo-text">
+          <h1>Aura<span>Cam</span></h1>
+          <p>AI Peace Gesture Blur</p>
+        </div>
+      </div>
+      <div class="system-status">
+        <div id="status-dot" class="status-dot warning"></div>
+        <span id="status-text">Loading Model...</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="app-workspace">
+      <!-- Camera Container -->
+      <section class="camera-card glass-panel">
+        <div class="camera-view-container">
+          <!-- Video element (hidden, source for analysis) -->
+          <video id="webcam" autoplay playsinline muted></video>
+          
+          <!-- Canvas element (visible, renders video and landmarks) -->
+          <canvas id="output-canvas"></canvas>
+          
+          <!-- Loading Overlay -->
+          <div id="loading-spinner" class="camera-overlay loading-overlay">
+            <div class="spinner"></div>
+            <p>Initializing camera and AI engine...</p>
+          </div>
+
+          <!-- Camera Inactive Overlay -->
+          <div id="camera-inactive-overlay" class="camera-overlay inactive-overlay hidden">
+            <i class="fa-solid fa-video-slash"></i>
+            <p>Camera is turned off</p>
+            <button id="overlay-start-camera" class="btn btn-primary">
+              <i class="fa-solid fa-video"></i> Start Camera
+            </button>
+          </div>
+
+          <!-- Peace Gesture HUD Overlay -->
+          <div id="peace-hud" class="peace-hud">
+            <div class="hud-badge">
+              <span class="pulse-icon"><i class="fa-solid fa-hand-peace"></i></span>
+              <span class="hud-text">PEACE DETECTED - BLURRING ACTIVE</span>
+            </div>
+          </div>
+          
+          <!-- Landmark Overlay Toggle Status Indicator -->
+          <div class="tracking-hud">
+            <span class="hud-stat"><i class="fa-solid fa-bolt"></i> FPS: <span id="fps-counter">0</span></span>
+            <span class="hud-stat"><i class="fa-solid fa-hands"></i> Hands: <span id="hands-detected">0</span></span>
+          </div>
+        </div>
+        
+        <!-- Quick Camera Actions -->
+        <div class="camera-actions">
+          <button id="toggle-camera-btn" class="btn btn-circle" title="Toggle Camera">
+            <i class="fa-solid fa-video"></i>
+          </button>
+          <button id="snapshot-btn" class="btn btn-circle btn-accent" title="Take Snapshot">
+            <i class="fa-solid fa-camera"></i>
+          </button>
+          <button id="toggle-flip-btn" class="btn btn-circle" title="Flip Mirror View">
+            <i class="fa-solid fa-arrows-left-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- Sidebar Controls Panel -->
+      <aside class="control-panel glass-panel">
+        <div class="panel-section">
+          <h2><i class="fa-solid fa-sliders"></i> Adjust Settings</h2>
+          
+          <!-- Camera Select -->
+          <div class="control-group">
+            <label for="camera-select"><i class="fa-solid fa-video"></i> Select Camera</label>
+            <select id="camera-select" class="form-control">
+              <option value="">Default Camera</option>
+            </select>
+          </div>
+
+          <!-- Blur Amount -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="blur-amount"><i class="fa-solid fa-eye-slash"></i> Blur Strength</label>
+              <span id="blur-amount-val" class="badge">15px</span>
+            </div>
+            <input type="range" id="blur-amount" min="5" max="50" value="15" step="1" class="slider">
+          </div>
+
+          <!-- Sensitivity -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="detection-confidence"><i class="fa-solid fa-bullseye"></i> AI Sensitivity</label>
+              <span id="confidence-val" class="badge">50%</span>
+            </div>
+            <input type="range" id="detection-confidence" min="30" max="90" value="50" step="5" class="slider">
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Visual Effects</h2>
+          
+          <!-- Blur Mode -->
+          <div class="control-group">
+            <label class="toggle-control">
+              <span class="toggle-label"><i class="fa-solid fa-desktop"></i> Blur Entire Screen</span>
+              <input type="checkbox" id="blur-mode-screen">
+              <span class="control-toggle-slider"></span>
+            </label>
+            <p class="control-tip">Blurs the whole website instead of just the camera view.</p>
+          </div>
+
+          <!-- Show Landmarks -->
+          <div class="control-group">
+            <label class="toggle-control">
+              <span class="toggle-label"><i class="fa-solid fa-diagram-project"></i> Show Hand Skeleton</span>
+              <input type="checkbox" id="show-landmarks" checked>
+              <span class="control-toggle-slider"></span>
+            </label>
+            <p class="control-tip">Draws the detected hand skeleton overlay.</p>
+          </div>
+          
+          <!-- Auto-hide UI in blur -->
+          <div class="control-group">
+            <label class="toggle-control">
+              <span class="toggle-label"><i class="fa-solid fa-ghost"></i> Hide Panel in Blur</span>
+              <input type="checkbox" id="hide-ui-in-blur">
+              <span class="control-toggle-slider"></span>
+            </label>
+            <p class="control-tip">Fades out controls when blurring to maximize preview space.</p>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section status-summary">
+          <h2><i class="fa-solid fa-circle-info"></i> How it works</h2>
+          <ul class="instructions-list">
+            <li><i class="fa-solid fa-hand-peace text-accent"></i> Raise your hand and make a <strong>peace gesture (V-sign)</strong>.</li>
+            <li><i class="fa-solid fa-wand-magic-sparkles text-accent"></i> The camera will automatically blur with a smooth transition.</li>
+            <li><i class="fa-solid fa-shield-halved text-accent"></i> Blur state helps protect your background privacy on demand.</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 AuraCam. Powered by MediaPipe Hand Landmarker. Local processing - privacy guaranteed.</p>
+    </footer>
+  </div>
+
+  <!-- Script tags -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

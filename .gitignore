@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+python_embed/
+
+# Web/Environment
+.env
+node_modules/
+
+# OS Files
+.DS_Store
+*.log
+
+# Project specific

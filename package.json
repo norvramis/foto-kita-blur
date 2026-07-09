@@ -1,0 +1,18 @@
+{
+  "name": "peace-pose-blur-camera",
+  "version": "1.0.0",
+  "description": "Camera application that blurs when a peace pose is detected",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000"
+  },
+  "keywords": [
+    "mediapipe",
+    "handpose",
+    "webcam",
+    "blur",
+    "peace-pose"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
